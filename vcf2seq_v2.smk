@@ -3,9 +3,9 @@
 
 """
 The purpose of this script is to convert a given vcf file to sequences.
-GRCh38 is used as a reference genome. A bed file of loci of interest is
-used to first get reference sequences. This is followed by bcftools
-consensus to get variant sequences for both haplotype
+GRCh38 is used as a reference genome. First, a bed file of loci of interest is
+used to get the reference sequences. This is followed by bcftools
+consensus to get variant sequences for both haplotypes.
 """
 
 """
@@ -17,13 +17,14 @@ TODOs:
 #######################################
 # INPUTS
 #######################################
-reference_hg38="/eva/edatums/reference_materials/reference_genomes/hg38/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+# GRCh38
+reference_hg38="snakemake_inputs/GRCh38_full_analysis_set_plus_decoy_hla.fa"
 
 # a bed file for regions of interest
-bedfile="hg38_liftedover_ucsc_correct.final.sorted.042023.dipBed.overlapSitesOnly.subsetFilt.bed"
+bedfile="snakemake_inputs/hg38_liftedover_ucsc_correct.final.sorted.042023.dipBed.overlapSitesOnly.subsetFilt.bed"
 
 # a vcf file to get the variants
-vcf="HPRC-cur.20211005-align2-GRCh38.dip.vcf.gz"
+vcf="snakemake_inputs/HPRC-cur.20211005-align2-GRCh38.dip.vcf.gz"
 #vcf="HPRC-cur.20211005-align2-GRCh38.dip.filtered.bcf"
 
 
@@ -38,7 +39,7 @@ rule all:
         expand("results/{INVCF}.bcftools.vcf2fasta.hap1.fa", INVCF=vcf),
         expand("results/{INVCF}.bcftools.vcf2fasta.hap2.fa", INVCF=vcf),
         expand ("results/{INVCF}.bcftools.vcf2fasta.hap1hap2.fa", INVCF=vcf),
-        expand("results/{INVCF}.bcftools.vcf2fasta.hap1hap2.oneline.fa", INVCF=vcf),
+        #expand("results/{INVCF}.bcftools.vcf2fasta.hap1hap2.oneline.fa", INVCF=vcf),
         expand("results/{bed}.txt", bed=bedfile),
         expand("results/{INVCF}.filtered.bcf{ext}", INVCF=vcf, ext=["", ".csi"])
 
@@ -114,12 +115,14 @@ rule combine_hap:
 
 
 # optionally convert the multiline fasta file to one line fasta file
-rule convert_multiline_to_one_line:
-    input:
-        "results/{INVCF}.bcftools.vcf2fasta.hap1hap2.fa"
-    output:
-        "results/{INVCF}.bcftools.vcf2fasta.hap1hap2.oneline.fa"
-    shell:
-        """ 
-        perl -pe '$. >1 and /^>/ ? print "\n" : chomp' {input} > {output}
-        """
+# uncomment here if need to include this in workflow, also uncomment output
+# in rule all
+# rule convert_multiline_to_one_line:
+#     input:
+#         "results/{INVCF}.bcftools.vcf2fasta.hap1hap2.fa"
+#     output:
+#         "results/{INVCF}.bcftools.vcf2fasta.hap1hap2.oneline.fa"
+#     shell:
+#         """
+#         perl -pe '$. >1 and /^>/ ? print "\n" : chomp' {input} > {output}
+#         """

@@ -5,6 +5,7 @@ file of loci and a VCF file. Optionally, you can also convert the multiline fast
 The image shows the entire bioinformatics pipeline with applications using targeted forensic markers.
 However, the snakemake workflow can be broadly applied to any VCF file and loci of interest. 
 
+![Pipeline Image](./Bioinformatics_pipeline.PNG)
 
 ```
 snakemake -s vcf2seq_v2.smk -c32

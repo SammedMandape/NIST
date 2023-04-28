@@ -11,21 +11,23 @@ consensus to get variant sequences for both haplotypes.
 """
 TODOs: 
 1. Bedtools intersect to find overlap between our loci and de novo assembled coord. or 
-   any other bed file to know the regions in which the variants were called. It is a safe
-   assumption that within that region is there was no variant then it is a homozygous loci. 
+   any other bed file to know the regions in which the variants were called. The
+   assumption being if there are no variants in a region, where the variants were called,
+   then it is a homozygous locus. If the region was not used for variant calling this assumption
+   might not stand true. 
 """
 #######################################
 # INPUTS
 #######################################
 # GRCh38
-reference_hg38="snakemake_inputs/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+reference_hg38="GRCh38_full_analysis_set_plus_decoy_hla.fa"
 
 # a bed file for regions of interest
-bedfile="snakemake_inputs/hg38_liftedover_ucsc_correct.final.sorted.042023.dipBed.overlapSitesOnly.subsetFilt.bed"
+bedfile="hg38_liftedover_ucsc_correct.final.sorted.042023.dipBed.overlapSitesOnly.subsetFilt.bed"
 
-# a vcf file to get the variants
-vcf="snakemake_inputs/HPRC-cur.20211005-align2-GRCh38.dip.vcf.gz"
-#vcf="HPRC-cur.20211005-align2-GRCh38.dip.filtered.bcf"
+# a vcf file to get the variants, make sure that you also have index file for the vcf
+vcf="HPRC-cur.20211005-align2-GRCh38.dip.vcf.gz"
+
 
 
 #######################################
@@ -33,14 +35,17 @@ vcf="snakemake_inputs/HPRC-cur.20211005-align2-GRCh38.dip.vcf.gz"
 #######################################
 rule all:
     input:
-    #   expand("results/{sample}_vcf2fasta.fa", sample=bedfile)
-        #expand("results/{bed}.txt",bed=bedfile),
-        #"results/GRCh38_samtools_faidx_regions.fa"
+        # haplotype 1 sequence file
         expand("results/{INVCF}.bcftools.vcf2fasta.hap1.fa", INVCF=vcf),
+        # haplotype 2 sequence file
         expand("results/{INVCF}.bcftools.vcf2fasta.hap2.fa", INVCF=vcf),
+        # a combined file of haplotype 1 and 2
         expand ("results/{INVCF}.bcftools.vcf2fasta.hap1hap2.fa", INVCF=vcf),
+        # the combined file of haplotype 1 and 2 converted to one line of fasta file
         #expand("results/{INVCF}.bcftools.vcf2fasta.hap1hap2.oneline.fa", INVCF=vcf),
+        # an intervals file, a bed file converted to 1-based start and stop
         expand("results/{bed}.txt", bed=bedfile),
+        # intersect bed file with variants of interest to get a smaller vcf file
         expand("results/{INVCF}.filtered.bcf{ext}", INVCF=vcf, ext=["", ".csi"])
 
 
@@ -71,8 +76,6 @@ rule bedfile_to_intervals:
 # samtools faidx to get just the regions of interest from GRCh38
 rule samtools_faidx:
     input:
-        #expand("results/{bed}.txt",bed=bedfile)
-        #expand("results/{{bed}}.txt",bed=bedfile)
         INTERVALS=expand("results/{bed}.txt",bed=bedfile),
         REF=reference_hg38
     output:

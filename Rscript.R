@@ -170,7 +170,7 @@ foobarbar1 %>% group_by(Loci) %>%
 foobarbar2 %>% ungroup() %>% distinct(Loci) %>% count() # count is 33
 
 #########################################################
-## combine all the five above
+## combine all the four above
 ## exact match will be duplicate of substring match in one or the other
 #########################################################
 
